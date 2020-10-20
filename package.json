@@ -2,21 +2,36 @@
   "name": "ambiantyeelight",
   "version": "0.1.0",
   "description": "Ambiant light for Yee light bulb",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Hardvor7/ambiantyeelight.git"
   },
   "author": "Robin Leclair",
+  "keywords": [
+    "xiaomi",
+    "yeelight",
+    "lights",
+    "smart lights",
+    "IoT",
+    "home automation"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Hardvor7/ambiantyeelight/issues"
   },
   "homepage": "https://github.com/Hardvor7/ambiantyeelight#readme",
   "devDependencies": {
-    "electron": "^10.1.3"
+    "electron": "^10.1.3",
+    "eslint": "^7.10.0"
+  },
+  "dependencies": {
+    "screenshot-desktop": "^1.12.2",
+    "yeelight-node": "^1.1.4",
+    "yeelight2": "^1.3.8"
   }
 }

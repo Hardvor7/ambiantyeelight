@@ -2,14 +2,80 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>Ambient Yee Light</title>
     <!-- https://electronjs.org/docs/tutorial/security#csp-meta-tag -->
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="./lib/mdl/material.min.css">
+    <script type="text/javascript" src="./lib/mdl/material.min.js"></script>
+    <script>
+      const { ipcRenderer } = require('electron')
+    </script>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using node <script>document.write(process.versions.node)</script>,
-    Chrome <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+    <h1>Lights list</h1>
+    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th class="mdl-data-table__cell--non-numeric">Name</th>
+          <th class="mdl-data-table__cell--non-numeric">IP</th>
+          <th class="mdl-data-table__cell--non-numeric">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <script>document.write(ipcRenderer.sendSync('load-lights', ''))</script>
+      </tbody>
+    </table>
+    
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="ambiant-light-switch">
+      <input type="checkbox" id="ambiant-light-switch" class="mdl-switch__input">
+      <span class="mdl-switch__label">Activate Ambiant Light</span>
+    </label>
+
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" onclick="updateImg(ipcRenderer.sendSync('get-screen', ''));">
+      Get ScreenShot
+    </button>
+    <img id="screen">
+    
+    <script>
+    function updateImg(imgBuffer) {
+      const blob = new Blob( [ imgBuffer ], { type: "image/jpeg" } );
+      const urlCreator = window.URL || window.webkitURL;
+      const imageUrl = urlCreator.createObjectURL( blob );
+      const img = document.getElementById('screen');
+      img.src = imageUrl;
+      
+    }
+
+    document.getElementById('ambiant-light-switch').addEventListener('click', (element) => {
+      const img = document.getElementById('screen');
+      const isChecked = element.currentTarget.checked;
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+
+      const width = 100;
+      const height = 100;
+      const pixelCount = width * height;
+
+      var pixelData = canvas.getContext('2d').getImageData(0, 0, img.width, img.height).data;
+      let avgRGB = [0, 0, 0]
+
+      pixelData.forEach((pixel, index) => {
+        if(index % 4 == 3) {
+          return;
+        }
+
+        avgRGB[index % 4] += pixel;
+      });
+      avgRGB = avgRGB.map(v => ~~(v / pixelCount));
+
+      ipcRenderer.invoke('update_light', avgRGB);
+    });
+
+    </script>
   </body>
 </html>
