@@ -2,7 +2,7 @@
   "name": "ambiantyeelight",
   "version": "0.1.0",
   "description": "Ambiant light for Yee light bulb",
-  "main": "index.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
     "lint": "eslint ."
@@ -26,10 +26,11 @@
   },
   "homepage": "https://github.com/Hardvor7/ambiantyeelight#readme",
   "devDependencies": {
-    "electron": "^10.1.3",
-    "eslint": "^7.10.0"
+    "electron": "^10.1.4",
+    "eslint": "^7.11.0"
   },
   "dependencies": {
+    "get-image-colors": "^4.0.0",
     "screenshot-desktop": "^1.12.2",
     "yeelight-node": "^1.1.4",
     "yeelight2": "^1.3.8"
