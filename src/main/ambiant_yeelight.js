@@ -3,12 +3,13 @@
 const { ipcMain } = require('electron');
 const { Yeelight } = require('yeelight-node');
 const screenshot = require('screenshot-desktop');
-const getPixels = require("get-pixels");
 
-const YeelightGroup = require("./yeelight_group");
-const ScreenArea = require('./screen_area');
+const YeelightGroup = require('./yeelight_group');
+const { ScreenArea, AmbiantArea } = require('./screen_area');
 
 function init() {
+
+  let ambiantLightInterval;
 
   const yeelightGroup = new YeelightGroup([
     new Yeelight({ id: 1, name: 'Bed', ip: '192.168.1.95', port: 55443 }),
@@ -22,26 +23,19 @@ function init() {
     new ScreenArea(width / 2, 0, width, height)
   ];
 
+  const area1 = new AmbiantArea(
+    new YeelightGroup([
+      new Yeelight({ id: 1, name: 'TV', ip: '192.168.1.95', port: 55443 })]),
+    new ScreenArea(0, 0, width / 2, height)
+  )
+
   ipcMain.on('get-yeelights', (event) => {
     event.returnValue = yeelightGroup.get_yeelights_object();
   });
 
   ipcMain.on('get-screenshot', (event) => {
+    
     screenshot({format: 'png'}).then((imgBuffer) => {
-      
-      getPixels(imgBuffer, 'image/png', (err, pixels) => {
-        if(err) {
-          console.log("Bad image path or buffer");
-          return;
-        }
-
-        const averages = getColorAverages(pixels, screenAreas);
-        console.log("got pixels", averages);
-        averages.forEach((average, i) => {
-          yeelightGroup.yeelights[i].set_rgb(average);
-        });
-      });
-
       event.sender.send('screenshot-recieved', imgBuffer);
     }).catch((err) => {
       console.error(err);
@@ -53,41 +47,15 @@ function init() {
     yeelightGroup.set_rgb(args);
   });
 
-}
-
-function getColorAverages(pixels, screenAreas = [], channelCount = 4, ignoredChannel = [false, false, false, true])
-{
-  const averages = [];
-  const averagesCount = new Array(screenAreas.length).fill(0);
-  screenAreas.forEach(() => {
-    const average = new Array(channelCount).fill(0);
-    averages.push(average);
-  });
-
-  pixels.data.forEach((pixel, index) => {
-    if(ignoredChannel[index % channelCount]) {
-      return;
+  ipcMain.on('toggle-ambiant-light', (event, active) => {
+    if(active) {
+      area1.startAmbiantLight();
     }
-
-    // Get index of pixel in screen grid
-    const width = pixels.shape[0];
-    const pixelIndex = Math.floor(index / channelCount);
-    const pixelX = pixelIndex % width;
-    const pixelY = Math.floor(pixelIndex / width);
-
-    screenAreas.forEach((screenArea, i) => {
-      if(screenArea.isInside(pixelX, pixelY, width)) {
-        averages[i][index % channelCount] += pixel;
-        averagesCount[i]++;
-      }
-    });
+    else {
+      area1.stopAmbiantLight();
+    }
   });
 
-  averages.forEach((average, i) => {
-    averages[i] = average.map(v => ~~(v * channelCount / averagesCount[i]));
-  });
-
-  return averages;
 }
 
 module.exports.init = init;

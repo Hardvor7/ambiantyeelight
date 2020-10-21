@@ -11,8 +11,9 @@ document.addEventListener("DOMContentLoaded", function() {
     updateLightsColorFromScreenshot();
   });
   
-  document.getElementById('ambiant-light-switch').addEventListener('click', () => { 
-    updateLightsColorFromScreenshot();
+  document.getElementById('ambiant-light-switch').addEventListener('click', (event) => { 
+    const isChecked = event.currentTarget.checked;
+    ipcRenderer.send('toggle-ambiant-light', isChecked);
   });
 
   // Get Ligths
